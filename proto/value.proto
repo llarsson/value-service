@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+// Handles a single value, and makes it accessible and modifiable by clients.
+service ValueService {
+    // Gets the value that this service handles.
+    rpc GetValue(Empty) returns (Value) {}
+    // Sets the value that this service handles.
+    rpc SetValue(Value) returns (Empty) {}
+}
+
+// Wrapper for the value that this service handles.
+message Value {
+    int64 value = 1;
+}
+
+// gRPC workaround object, since we do not have a "null" keyword.
+message Empty {}
