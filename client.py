@@ -16,17 +16,19 @@ def delay():
 def run(addr, mean):
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
+        correct = 0
         while (True):
-            correct = random.randint(1, 100000000)
+            correct += 1
             service.SetValue(value_pb2.Value(value=correct))
             delay()
 
-            requests = int(random.expovariate(1/mean))
+            requests = int(random.expovariate(1/mean)) + 1
             while requests:
                 actual = service.GetValue(value_pb2.Empty()).value
                 logging.info("%d,%d", correct, actual)
-                delay()
                 requests -= 1
+                if requests:
+                    delay()
 
 if __name__=="__main__":
     random.seed(int(os.getenv("SEED", 42)))
