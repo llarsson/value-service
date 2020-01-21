@@ -34,4 +34,4 @@ def serve(port):
 
 if __name__=="__main__":
     logging.basicConfig(format='%(asctime)s,%(message)s', datefmt='%s', level=logging.INFO)
-    serve(int(os.getenv("PORT", 1111)))
+    serve(int(os.getenv("PORT", 1100)))

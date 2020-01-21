@@ -33,4 +33,4 @@ def run(addr, mean):
 if __name__=="__main__":
     random.seed(int(os.getenv("SEED", 42)))
     logging.basicConfig(format='%(asctime)s,%(message)s', datefmt='%s', level=logging.INFO)
-    run(os.getenv("VALUE_SERVICE_ADDR", "localhost:1111"), os.getenv("MEAN", 20.0))
+    run(os.getenv("VALUE_SERVICE_ADDR", "localhost:1100"), os.getenv("MEAN", 20.0))
