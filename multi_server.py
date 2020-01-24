@@ -27,7 +27,7 @@ class ValueServiceServicer(value_pb2_grpc.ValueServiceServicer):
 
 def serve(port):
     # single-threaded for dependable results
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=200))
     value_pb2_grpc.add_ValueServiceServicer_to_server(ValueServiceServicer(), server)
     server.add_insecure_port("[::]:{}".format(port))
     server.start()
