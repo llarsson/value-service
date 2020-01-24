@@ -1,11 +1,13 @@
 #!/bin/bash
 
-set -x
 set -euo pipefail
 
 experiment_id=$1
+get_rate=$2
+set_rate=$3
+proxy_max_age=$4
 
-duration=300
+duration=600
 warmup=5
 
 output_dir=$(pwd)/experiments/${experiment_id}
@@ -17,7 +19,7 @@ run_server () {
 
 run_estimator() {
 	touch ${output_dir}/estimator.csv
-	docker run --name estimator -d --net host -e PROXY_LISTEN_PORT=1110 -e VALUE_SERVICE_ADDR=localhost:1100 -e PROXY_MAX_AGE=20 -e PROXY_CACHE_BLACKLIST=.*Set.* -v ${output_dir}/estimator.csv:/app/data.csv value-service-estimator
+	docker run --name estimator -d --net host -e PROXY_LISTEN_PORT=1110 -e VALUE_SERVICE_ADDR=localhost:1100 -e PROXY_MAX_AGE=${proxy_max_age} -e PROXY_CACHE_BLACKLIST=.*Set.* -v ${output_dir}/estimator.csv:/app/data.csv value-service-estimator
 }
 
 run_cache() {
@@ -28,7 +30,7 @@ run_cache() {
 run_client () {
 	touch ${output_dir}/client-getter-stats.txt
 	touch ${output_dir}/client-setter-stats.txt
-	docker run --name client -d --net host -e VALUE_SERVICE_ADDR=localhost:1120 -e SEED=42 -e GET_RATE=20 -e SET_RATE=0.05 -e DURATION=30 -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient
+	docker run --name client -d --net host -e VALUE_SERVICE_ADDR=localhost:1120 -e SEED=42 -e GET_RATE=${get_rate} -e SET_RATE=${set_rate} -e DURATION=${duration} -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient
 }
 
 run_server
