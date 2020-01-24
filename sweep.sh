@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipfail
+set -euo pipefail
 
 for repetition in $(seq 3); do
 	for proxy_max_age in 0 1 10 30 dynamic; do
