@@ -20,8 +20,10 @@ def setter(addr, rate, end_time, correct):
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
+            req_start = time.time()
             service.SetValue(value_pb2.Value(value=correct.value))
-            delay = random.expovariate(rate)
+            req_end = time.time()
+            delay = random.expovariate(rate) - (req_start - req_end)
             time.sleep(delay)
             correct.value += 1
             delay_sum += delay
@@ -40,10 +42,13 @@ def getter(addr, rate, end_time, correct):
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
+            req_start_ns = time.time_ns()
+            req_start = time.time()
             actual = service.GetValue(value_pb2.Empty()).value
-            logging.info("%d,%d,%d", time.time_ns(), correct.value, actual)
-            delay = random.expovariate(rate)
+            req_end = time.time()
+            delay = random.expovariate(rate) - (req_start - req_end)
             time.sleep(delay)
+            logging.info("%d,%d,%d", req_start_ns, correct.value, actual)
             delay_sum += delay
             delays += 1
 
