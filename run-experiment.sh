@@ -12,7 +12,7 @@ output_dir=$(pwd)/experiments/${experiment_id}
 mkdir -p ${output_dir}
 
 run_server () {
-	docker run --name server -d --net host -e PORT=1100 value-service-server
+	docker run --name server -d --net host -e PORT=1100 value-service-multiserver
 }
 
 run_estimator() {
@@ -26,7 +26,9 @@ run_cache() {
 }
 
 run_client () {
-	docker run --name client -d --net host -e VALUE_SERVICE_ADDR=localhost:1120 -e SEED=42 -e MEAN=20 -e COUNT=30 value-service-client
+	touch ${output_dir}/client-getter-stats.txt
+	touch ${output_dir}/client-setter-stats.txt
+	docker run --name client -d --net host -e VALUE_SERVICE_ADDR=localhost:1120 -e SEED=42 -e GET_RATE=20 -e SET_RATE=0.05 -e DURATION=30 -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient
 }
 
 run_server
