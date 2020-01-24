@@ -36,12 +36,11 @@ run_client () {
 run_server
 run_estimator
 run_cache
-echo "Sleeping for ${warmup} seconds..."
 sleep ${warmup}
 run_client
 
-while docker ps | grep client; do
-	echo "Client seems to be running still..."
+while docker ps | grep client > /dev/null; do
+	echo -n "."
 	sleep 5
 done
 
