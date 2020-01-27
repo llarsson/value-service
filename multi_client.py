@@ -44,11 +44,12 @@ def getter(addr, rate, end_time, correct):
         while time.time() < end_time:
             req_start_ns = time.time_ns()
             req_start = time.time()
+            current_correct = correct.value
             actual = service.GetValue(value_pb2.Empty()).value
             req_end = time.time()
             delay = random.expovariate(rate) - (req_start - req_end)
             time.sleep(delay)
-            logging.info("%d,%d,%d", req_start_ns, correct.value, actual)
+            logging.info("%d,%d,%d", req_start_ns, current_correct, actual)
             delay_sum += delay
             delays += 1
 
