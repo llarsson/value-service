@@ -42,23 +42,25 @@ def getter(addr, rate, end_time, correct):
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
-            work_start = time.time()
-            # fetch current correct value before making actual request,
-            # since this could take a while due to thread safety and whatnot
-            current_correct = correct.value
+            try: 
+                work_start = time.time()
+                # fetch current correct value before making actual request,
+                # since this could take a while due to thread safety and whatnot
+                current_correct = correct.value
 
-            req_start_ns = time.time_ns()
-            actual = service.GetValue(value_pb2.Empty()).value
-            req_end_ns = time.time_ns()
+                req_start_ns = time.time_ns()
+                actual = service.GetValue(value_pb2.Empty()).value
+                req_end_ns = time.time_ns()
+                logging.info("%d,%d,%d,%d", req_start_ns, (req_end_ns - req_start_ns), current_correct, actual)
 
-            logging.info("%d,%d,%d,%d", req_start_ns, (req_end_ns - req_start_ns), current_correct, actual)
-
-            delays += 1
-            # delay must be proportional to the time it took to make request
-            work_end = time.time()
-            delay = random.expovariate(rate) - (work_start - work_end)
-            delay_sum += delay
-            time.sleep(delay)
+                delays += 1
+                # delay must be proportional to the time it took to make request
+                work_end = time.time()
+                delay = random.expovariate(rate) - (work_start - work_end)
+                delay_sum += delay
+                time.sleep(delay)
+            except:
+                continue
 
 
     with open('getter_stats.txt', 'w') as stats:
