@@ -9,6 +9,7 @@ for repetition in $(seq 3); do
 			for set_rate in 0.01 0.02 0.04 0.1 0.2 1; do
 				experiment_id="${proxy_max_age}-maxage-${get_rate}-getrate-${set_rate}-setrate-${repetition}-repetition"
 				echo "${experiment_id}"
+				export duration=300
 				until ./run-experiment.sh ${experiment_id} ${get_rate} ${set_rate} ${proxy_max_age}; do
 					echo "Some error occurred, sleeping and trying again..."
 					sleep 5
