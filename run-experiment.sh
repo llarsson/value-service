@@ -7,7 +7,7 @@ get_rate=$2
 set_rate=$3
 proxy_max_age=$4
 
-duration=600
+duration=${duration:=600}
 warmup=5
 
 output_dir=$(pwd)/experiments/${experiment_id}
@@ -33,6 +33,7 @@ run_client () {
 	docker run --name client -d --net host -e VALUE_SERVICE_ADDR=localhost:1120 -e SEED=42 -e GET_RATE=${get_rate} -e SET_RATE=${set_rate} -e DURATION=${duration} -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient
 }
 
+echo -n "${experiment_id} of duration ${duration} started at "
 date
 
 run_server
