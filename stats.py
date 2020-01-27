@@ -19,10 +19,7 @@ def calculate_traffic_reduction(caching):
 
 
 def calculate_ttl(estimator):
-    # TODO: Have estimator output TTL
-    experiment_id = sys.argv[1].split('/')[-1]
-    ttl = experiment_id.split('-')[0]
-    return int(ttl)
+    return estimator['estimate'].mean()
 
 
 def main(experiment):
@@ -33,10 +30,9 @@ def main(experiment):
 
     error_fraction = calculate_error_fraction(client)
     traffic_reduction = calculate_traffic_reduction(caching)
-    # TODO Only once we actually output this from estimator
-    # ttl = calculate_ttl(estimator)
-    #print('{},{},{}'.format(error_fraction, traffic_reduction, ttl))
-    print('{},{}'.format(error_fraction, traffic_reduction)) # FIXME Should have TTL here
+    mean_ttl = calculate_ttl(estimator)
+
+    print('{},{},{}'.format(error_fraction, traffic_reduction, mean_ttl))
 
 
 if __name__=="__main__":
