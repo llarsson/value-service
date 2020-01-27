@@ -38,18 +38,19 @@ def getter(addr, rate, end_time, correct):
     delay_sum = 0
     delays = 0
     logging.basicConfig(format='%(message)s', level=logging.INFO)
-    logging.info("timestamp,correct,actual")
+    logging.info("timestamp,response_time,correct,actual")
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
-            req_start_ns = time.time_ns()
             req_start = time.time()
+            req_start_ns = time.time_ns()
             current_correct = correct.value
             actual = service.GetValue(value_pb2.Empty()).value
+            req_end_ns = time.time_ns()
             req_end = time.time()
             delay = random.expovariate(rate) - (req_start - req_end)
             time.sleep(delay)
-            logging.info("%d,%d,%d", req_start_ns, current_correct, actual)
+            logging.info("%d,%d,%d,%d", req_start_ns, (req_end_ns - req_start_ns), current_correct, actual)
             delay_sum += delay
             delays += 1
 
