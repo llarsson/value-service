@@ -22,6 +22,11 @@ def calculate_traffic_reduction(caching):
     return cached.shape[0] / total
 
 
+def calculate_work_reduction(client, server):
+    gets_at_server = server.query('operation == "get"')
+    return gets_at_server.shape[0] / client.shape[0]
+
+
 def calculate_mean_ttl(estimator):
     return estimator['estimate'].mean()
 
@@ -37,7 +42,7 @@ def main(experiment):
     mean_ttl = calculate_mean_ttl(estimator)
     mean_response_time = calculate_mean_response_time(client)
 
-    print('{},{},{},{}'.format(error_fraction, traffic_reduction, mean_ttl, mean_response_time))
+    print('{},{},{},{},{}'.format(error_fraction, traffic_reduction, work_reduction, mean_ttl, mean_response_time))
 
 
 if __name__=="__main__":
