@@ -15,6 +15,7 @@ import os
 from multiprocessing import Process, Value
 
 def setter(addr, rate, end_time, correct):
+    random.seed(int(os.getenv("SEED", 42)))
     delay_sum = 0
     delays = 0
     with grpc.insecure_channel(addr) as channel:
@@ -35,6 +36,7 @@ def setter(addr, rate, end_time, correct):
 
 
 def getter(addr, rate, end_time, correct):
+    random.seed(int(os.getenv("SEED", 42)))
     delay_sum = 0
     delays = 0
     logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -69,8 +71,6 @@ def getter(addr, rate, end_time, correct):
 
 
 if __name__ == "__main__":
-    random.seed(int(os.getenv("SEED", 42)))
-
     correct = Value('I', 1)
 
     addr = os.getenv("VALUE_SERVICE_ADDR", "localhost:1100")

@@ -11,14 +11,18 @@ def calculate_error_fraction(client):
     error_fraction = error_count / client.shape[0]
     return error_fraction
 
+def calculate_mean_response_time(client):
+    return client['response_time'].mean()
+
 
 def calculate_traffic_reduction(caching):
-    cached = caching.query('source == "cache"')
-    total = caching.shape[0]
+    gets = caching.query('method == "/ValueService/GetValue()"')
+    cached = gets.query('source == "cache"')
+    total = gets.shape[0]
     return cached.shape[0] / total
 
 
-def calculate_ttl(estimator):
+def calculate_mean_ttl(estimator):
     return estimator['estimate'].mean()
 
 
@@ -30,9 +34,10 @@ def main(experiment):
 
     error_fraction = calculate_error_fraction(client)
     traffic_reduction = calculate_traffic_reduction(caching)
-    mean_ttl = calculate_ttl(estimator)
+    mean_ttl = calculate_mean_ttl(estimator)
+    mean_response_time = calculate_mean_response_time(client)
 
-    print('{},{},{}'.format(error_fraction, traffic_reduction, mean_ttl))
+    print('{},{},{},{}'.format(error_fraction, traffic_reduction, mean_ttl, mean_response_time))
 
 
 if __name__=="__main__":
