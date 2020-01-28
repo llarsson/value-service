@@ -37,7 +37,7 @@ run_client () {
 
 echo "Cleaning up..."
 for component in client server estimator caching; do
-	docker rm -f ${component} > /dev/null || true
+	docker rm -f ${component} 2> /dev/null || true
 done
 
 echo -n "${experiment_id} of duration ${duration} (seed ${seed}) started at "
