@@ -27,11 +27,11 @@ def plot_values(key):
     for (index, proxy_max_age) in enumerate(proxy_max_ages):
         ax = axes[index]
         ax.set_title('TTL={}'.format(proxy_max_age))
-        sns.heatmap(df.query('proxy_max_age == "{}"'.format(proxy_max_age)).pivot(index='get_rate', columns='set_rate', values=key), vmin=0, vmax=1, annot=True, ax=ax)
+        sns.heatmap(df.query('proxy_max_age == "{}"'.format(proxy_max_age)).pivot(index='get_rate', columns='set_rate', values=key).round(2), vmin=0, vmax=1, annot=True, ax=ax)
         ax.invert_yaxis()
     ax = axes[5]
     ax.set_title('Mean TTL')
-    sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='mean_ttl'), annot=True, ax=ax)
+    sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='mean_ttl').round(2), annot=True, ax=ax)
 
 for key in keys:
     plot_values(key)
