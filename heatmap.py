@@ -5,12 +5,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import sys
+
+path = 'experiments'
+
+if len(sys.argv) == 2:
+    path = sys.argv[1]
 
 sources = []
-
-for file in glob.glob('experiments/*.csv'):
+for file in glob.glob('{}/*.csv'.format(path)):
     sources.append( pd.read_csv(file) )
-
 df = pd.concat(sources).groupby(['get_rate','set_rate','proxy_max_age']).mean().reset_index()
 
 proxy_max_ages = ["static-0", "static-1", "static-10", "static-30", "dynamic-simplistic", "dynamic-tbg1" ]#, "dynamic-nyqvistish"]
