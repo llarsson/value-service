@@ -31,6 +31,10 @@ def calculate_mean_ttl(estimator):
     return estimator['estimate'].mean()
 
 
+def calculate_median_ttl(estimator):
+    return estimator['estimate'].median()
+
+
 def main(experiment):
     client = pd.read_csv(experiment + '/client.log')
     caching = pd.read_csv(experiment + '/caching.csv')
@@ -40,10 +44,11 @@ def main(experiment):
     error_fraction = calculate_error_fraction(client)
     traffic_reduction = calculate_traffic_reduction(caching)
     mean_ttl = calculate_mean_ttl(estimator)
+    median_ttl = calculate_median_ttl(estimator)
     mean_response_time = calculate_mean_response_time(client)
     server_work_fraction = calculate_server_work_fraction(client, server)
 
-    print('{},{},{},{},{}'.format(error_fraction, traffic_reduction, server_work_fraction, mean_ttl, mean_response_time))
+    print('{},{},{},{},{},{}'.format(error_fraction, traffic_reduction, server_work_fraction, mean_ttl, median_ttl, mean_response_time))
 
 
 if __name__=="__main__":
