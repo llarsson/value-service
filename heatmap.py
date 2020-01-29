@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
+import glob 
 import numpy as np 
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('experiments/1.csv')
+sources = []
+
+for file in glob.glob('experiments/*.csv'):
+    sources.append( pd.read_csv(file) )
+
+df = pd.concat(sources).groupby(['get_rate','set_rate','proxy_max_age']).mean().reset_index()
 
 proxy_max_ages = [0, 1, 10, 30, "dynamic"]
 keys = ['error_fraction', 'traffic_reduction', 'tr_over_err']
