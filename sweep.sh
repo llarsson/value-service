@@ -10,7 +10,7 @@ rm ${sweepfile} || true
 for repetition in $(seq 3); do
 	for proxy_max_age in static-0 static-1 static-10 static-30 dynamic-simplistic dynamic-tbg1; do
 		for get_rate in 100 50 25 10 5 1 0.2; do
-			for set_rate in 0.01 0.02 0.04 0.1 0.2 1 5; do
+			for set_rate in 0.01 0.02 0.04 0.1 0.2 0.5 1 5; do
 				experiment_id="${proxy_max_age}-maxage-${get_rate}-getrate-${set_rate}-setrate-${repetition}-repetition"
 				export duration=300
 				export seed=${repetition}
