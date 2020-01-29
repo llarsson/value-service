@@ -13,104 +13,55 @@ for file in glob.glob('experiments/*.csv'):
 
 df = pd.concat(sources).groupby(['get_rate','set_rate','proxy_max_age']).mean().reset_index()
 
-proxy_max_ages = [0, 1, 10, 30, "dynamic"]
-keys = ['error_fraction', 'traffic_reduction', 'tr_over_err', 'work_reduction']
+proxy_max_ages = ["static-0", "static-1", "static-10", "static-30", "dynamic-simplistic", "dynamic-tbg1" ]#, "dynamic-nyqvistish"]
+keys = ['traffic_reduction', 'server_work_fraction', 'error_fraction', 'goodness']
 
-alpha = 2
-beta = 1
-df['tr_over_err'] = np.power(df['traffic_reduction'], 1/beta) * (1 - np.power(df['error_fraction'], 1/alpha))
+titles = {
+    'traffic_reduction': "Traffic reduction",
+    'server_work_fraction': 'Server work fraction',
+    'error_fraction': 'Error fraction',
+    'goodness': 'Overall utility score'
+}
 
-def plot_values(key):
-    fig, axes = plt.subplots(2, 3)
+alpha = np.log(2)
+beta = np.log(2)
+gamma = 2
+
+#df['tr_over_err'] = np.power(df['traffic_reduction'], 1/beta) * (1 - np.power(df['error_fraction'], 1/alpha))
+df['goodness'] = np.exp(alpha * (df['traffic_reduction'] - 1.0)) * np.exp(-beta * df['server_work_fraction']) * (1.0 - np.power(df['error_fraction'], 1.0/gamma))
+
+def plot_static(key, vmin=0, vmax=1):
+    static = [p for p in proxy_max_ages if "static" in p]
+    fig, axes = plt.subplots(2, 2)
     axes = axes.reshape(-1)
-    fig.suptitle(key)
-    for (index, proxy_max_age) in enumerate(proxy_max_ages):
+    fig.suptitle(titles[key] + " (static TTL)")
+    for (index, proxy_max_age) in enumerate(static):
         ax = axes[index]
-        ax.set_title('TTL={}'.format(proxy_max_age))
-        sns.heatmap(df.query('proxy_max_age == "{}"'.format(proxy_max_age)).pivot(index='get_rate', columns='set_rate', values=key).round(2), vmin=0, vmax=1, annot=True, ax=ax)
+        ax.set_title(proxy_max_age)
+        sns.heatmap(df.query('proxy_max_age == "{}"'.format(proxy_max_age)).pivot(index='get_rate', columns='set_rate', values=key).round(2), vmin=vmin, vmax=vmax, annot=True, ax=ax)
         ax.invert_yaxis()
-    ax = axes[5]
-    ax.set_title('Mean TTL')
-    sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='mean_ttl').round(2), annot=True, ax=ax)
+
+def plot_dynamic(key, vmin=0, vmax=1):
+    dynamic = [p for p in proxy_max_ages if "dynamic" in p]
+    fig, axes = plt.subplots(len(dynamic), 2)
+    fig.suptitle(titles[key] + " (dynamically estimated TTL)")
+    for (index, strategy) in enumerate(dynamic):
+        relevant = df.query('proxy_max_age == "{}"'.format(strategy))
+
+        ax = axes[index, 0]
+        ax.set_title(strategy)
+        sns.heatmap(relevant.pivot(index='get_rate', columns='set_rate', values=key).round(2), 
+            vmin=vmin, vmax=vmax, annot=True, ax=ax)
+        ax.invert_yaxis()
+
+        ax = axes[index, 1]
+        ax.set_title("Mean TTL for {}".format(strategy))
+        sns.heatmap(relevant.pivot(index='get_rate', columns='set_rate', values="mean_ttl").round(2), 
+            vmin=0, vmax=df['mean_ttl'].max(), annot=True, ax=ax)
+        ax.invert_yaxis()
 
 for key in keys:
-    plot_values(key)
+    plot_static(key)
+    plot_dynamic(key)
 
 plt.show()
-
- #
- #
- #
- #plt.figure(1)
- #plt.subplot(231)
- #plt.suptitle('Error fraction')
- #plt.title('TTL=0')
- #ax = sns.heatmap(df.query('proxy_max_age == 0').pivot(index='get_rate', columns='set_rate', values='error_fraction'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- #plt.subplot(232)
- #plt.title('TTL=1')
- #ax = sns.heatmap(df.query('proxy_max_age == 1').pivot(index='get_rate', columns='set_rate', values='error_fraction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- #plt.subplot(233)
- #plt.title('TTL=10')
- #ax = sns.heatmap(df.query('proxy_max_age == 10').pivot(index='get_rate', columns='set_rate', values='error_fraction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- #plt.subplot(234)
- #plt.title('TTL=30')
- #ax = sns.heatmap(df.query('proxy_max_age == 30').pivot(index='get_rate', columns='set_rate', values='error_fraction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- ## plt.subplot(235)
- ## plt.title('TTL=dynamic')
- ## ax = sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='error_fraction'), vmin=0, vmax=1,annot=True)
- ## ax.invert_yaxis()
- #
- #
- #plt.figure(2)
- #plt.subplot(231)
- #plt.suptitle('Traffic reduction')
- #plt.title('TTL=0')
- #ax = sns.heatmap(df.query('proxy_max_age == 0').pivot(index='get_rate', columns='set_rate', values='traffic_reduction'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- #plt.subplot(232)
- #plt.title('TTL=1')
- #ax = sns.heatmap(df.query('proxy_max_age == 1').pivot(index='get_rate', columns='set_rate', values='traffic_reduction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- #plt.subplot(233)
- #plt.title('TTL=10')
- #ax = sns.heatmap(df.query('proxy_max_age == 10').pivot(index='get_rate', columns='set_rate', values='traffic_reduction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- #plt.subplot(234)
- #plt.title('TTL=30')
- #ax = sns.heatmap(df.query('proxy_max_age == 30').pivot(index='get_rate', columns='set_rate', values='traffic_reduction'), vmin=0, vmax=1,annot=True)
- #ax.invert_yaxis()
- ## plt.subplot(235)
- ## plt.title('TTL=dynamic')
- ## ax = sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='traffic_reduction'), vmin=0, vmax=1,annot=True)
- ## ax.invert_yaxis()
- #
- #
- #
- #plt.figure(3)
- #plt.subplot(231)
- #plt.suptitle('Traffic reduction over error fraction')
- #plt.title('TTL=0')
- #ax = sns.heatmap(df.query('proxy_max_age == 0').pivot(index='get_rate', columns='set_rate', values='tr_over_err'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- #plt.subplot(232)
- #plt.title('TTL=1')
- #ax = sns.heatmap(df.query('proxy_max_age == 1').pivot(index='get_rate', columns='set_rate', values='tr_over_err'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- #plt.subplot(233)
- #plt.title('TTL=10')
- #ax = sns.heatmap(df.query('proxy_max_age == 10').pivot(index='get_rate', columns='set_rate', values='tr_over_err'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- #plt.subplot(234)
- #plt.title('TTL=30')
- #ax = sns.heatmap(df.query('proxy_max_age == 30').pivot(index='get_rate', columns='set_rate', values='tr_over_err'), vmin=0, vmax=1, annot=True)
- #ax.invert_yaxis()
- ## plt.subplot(235)
- ## plt.title('TTL=dynamic')
- ## ax = sns.heatmap(df.query('proxy_max_age == "dynamic"').pivot(index='get_rate', columns='set_rate', values='tr_over_err'), vmin=0, vmax=1, annot=True)
- ## ax.invert_yaxis()
- #
- #plt.show()
