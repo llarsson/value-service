@@ -5,7 +5,7 @@ set -uo pipefail
 
 for repetition in $(seq 3); do
 	echo "get_rate,set_rate,proxy_max_age,error_fraction,traffic_reduction,work_reduction,mean_ttl,mean_response_time" > experiments/${repetition}.csv
-	for proxy_max_age in 0 1 10 30 dynamic; do
+	for proxy_max_age in static-0 static-1 static-10 static-30 dynamic-simplistic dynamic-tbg1; do
 		for get_rate in 100 50 10 5 1 0.2; do
 			for set_rate in 0.01 0.02 0.1 0.2 1 5; do
 

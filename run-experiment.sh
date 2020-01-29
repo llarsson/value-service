@@ -8,7 +8,6 @@ set_rate=$3
 proxy_max_age=$4
 
 duration=${duration:=600}
-strategy=${strategy:=simplistic}
 seed=${seed:=42}
 warmup=5
 
@@ -22,7 +21,7 @@ run_server () {
 
 run_estimator() {
 	touch ${output_dir}/estimator.csv
-	docker run --name estimator-${experiment_id} -d --net ${network_id} --network-alias=estimator -e PROXY_LISTEN_PORT=1110 -e VALUE_SERVICE_ADDR=server:1100 -e PROXY_ESTIMATION_STRATEGY=${strategy} -e PROXY_MAX_AGE=${proxy_max_age} -e PROXY_CACHE_BLACKLIST=.*Set.* -v ${output_dir}/estimator.csv:/app/data.csv value-service-estimator &> /dev/null
+	docker run --name estimator-${experiment_id} -d --net ${network_id} --network-alias=estimator -e PROXY_LISTEN_PORT=1110 -e VALUE_SERVICE_ADDR=server:1100 -e PROXY_MAX_AGE=${proxy_max_age} -e PROXY_CACHE_BLACKLIST=.*Set.* -v ${output_dir}/estimator.csv:/app/data.csv value-service-estimator &> /dev/null
 }
 
 run_cache() {
