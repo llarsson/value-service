@@ -17,7 +17,7 @@ for file in glob.glob('{}/*.csv'.format(path)):
     sources.append( pd.read_csv(file) )
 df = pd.concat(sources).groupby(['get_rate','set_rate','proxy_max_age']).mean().reset_index()
 
-proxy_max_ages = ["static-0", "static-1", "static-10", "static-30", "dynamic-simplistic", "dynamic-tbg1" ]#, "dynamic-nyqvistish"]
+proxy_max_ages = ["static-0", "static-1", "static-10", "static-30", "dynamic-simplistic", "dynamic-tbg1", "dynamic-nyqvistish"]
 keys = ['traffic_reduction', 'server_work_fraction', 'error_fraction', 'goodness']
 
 titles = {
