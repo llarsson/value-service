@@ -31,7 +31,21 @@ run_cache() {
 run_client () {
 	touch ${output_dir}/client-getter-stats.txt
 	touch ${output_dir}/client-setter-stats.txt
-	docker run --name client-${experiment_id} -d --net ${network_id} --network-alias=client -e GETTER_MODE=sinusodial -e SETTER_MODE=sinusodial -e VALUE_SERVICE_ADDR=caching:1120 -e SEED=${seed} -e SETTER_PHASE=${setter_phase} -e DURATION=${duration} -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient &> /dev/null
+	docker run --name client-${experiment_id} -d --net ${network_id} --network-alias=client \
+		-e VALUE_SERVICE_ADDR=caching:1120 \
+		-e SEED=${seed} \
+		-e GETTER_MODE=sinusodial \
+		-e SETTER_MODE=sinusodial \
+		-e DURATION=${duration} \
+		-e GETTER_SINUSODIAL_MIN_RATE=1 \
+		-e GETTER_SINUSODIAL_MAX_RATE=10 \
+		-e GETTER_SINUSODIAL_PERIOD=${duration} \
+		-e GETTER_SINUSODIAL_PHASE=0 \
+		-e SETTER_SINUSODIAL_MIN_RATE=0.05 \
+		-e SETTER_SINUSODIAL_MAX_RATE=1.1 \
+		-e SETTER_SINUSODIAL_PERIOD=${duration} \
+		-e SETTER_SINUSODIAL_PHASE=${setter_phase} \
+		-v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient &> /dev/null
 }
 
 cleanup() {
