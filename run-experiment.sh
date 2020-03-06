@@ -32,7 +32,7 @@ run_cache() {
 run_client () {
 	touch ${output_dir}/client-getter-stats.txt
 	touch ${output_dir}/client-setter-stats.txt
-	docker run --name client-${experiment_id} -d --net ${network_id} --network-alias=client -e GETTER_MODE=sinusodial -e SETTER_MODE=poisson -e VALUE_SERVICE_ADDR=caching:1120 -e SEED=${seed} -e GET_RATE=${get_rate} -e SET_RATE=${set_rate} -e DURATION=${duration} -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient &> /dev/null
+	docker run --name client-${experiment_id} -d --net ${network_id} --network-alias=client -e GETTER_MODE=poisson -e SETTER_MODE=poisson -e VALUE_SERVICE_ADDR=caching:1120 -e SEED=${seed} -e GET_RATE=${get_rate} -e SET_RATE=${set_rate} -e DURATION=${duration} -v ${output_dir}/client-setter-stats.txt:/app/setter_stats.txt -v ${output_dir}/client-getter-stats.txt:/app/getter_stats.txt value-service-multiclient &> /dev/null
 }
 
 cleanup() {
