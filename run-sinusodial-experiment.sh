@@ -4,7 +4,7 @@ set -euo pipefail
 
 experiment_id=$1
 proxy_max_age=$2
-setter_phase=$2
+setter_phase=$3
 
 duration=${duration:=600}
 seed=${seed:=42}
