@@ -33,12 +33,12 @@ def calculate_true_ttl(server):
     # give me all 'set'
     # pandas 'diff' on timestamp column gives how long a value was valid
     sets_at_server = server.query('operation == "set"')
-    sets_at_server = sets_at_server.drop(columns=['operation', 'value']).rename(columns={'timestamp': 'actual_ttl'})
+    sets_at_server = sets_at_server.drop(columns=['operation', 'value']).rename(columns={'timestamp': 'actual_ttl'}).diff()
 
-    print(server)
-    print(sets_at_server)
+    sets_at_server['actual_ttl'] = sets_at_server['actual_ttl'] / 1000000000.0 # ns to second conversion
 
-    return server.merge(sets_at_server, left_index=True)
+
+    return server.merge(sets_at_server, how='outer', right_index=True, left_index=True)
 
 def calculate_traffic_reduction(caching):
     gets = caching.query('method == "/ValueService/GetValue()"')
@@ -71,7 +71,7 @@ def main(experiment, bins):
     traffic_reduction = calculate_traffic_reduction(caching)
 
     true_ttl = calculate_true_ttl(server)
-    print(true_ttl)
+    binned_true_ttl = resample(true_ttl)
 
     work_reduction = calculate_work_reduction(server, client)
     binned_work_reduction = resample_sum(work_reduction)
@@ -86,7 +86,8 @@ def main(experiment, bins):
 
     fix, ax1 = plt.subplots()
 
-    binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL', ax=ax1)
+    binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL (s)', ax=ax1)
+    binned_true_ttl['actual_ttl'].plot(kind='bar', color='gray', label='Mean actual TTL (s)', ax=ax1)
     binned_request_rate['rate'].plot(kind='bar', color='black', label='Mean request rate (req/s)', ax=ax1)
     ax1.legend(loc='upper left')
 
@@ -94,7 +95,7 @@ def main(experiment, bins):
 
     binned_traffic_reduction['hit'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
     binned_client['errors'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
-    binned_work_reduction['fraction'].plot(kind='bar', color='yellow', label='Mean work reduction', ax=ax2)
+    binned_work_reduction['fraction'].plot(kind='bar', color='yellow', label='Mean work fraction', ax=ax2)
 
     ax2.legend(loc='upper right')
 
