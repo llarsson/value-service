@@ -3,6 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys
+import numpy as np
 
 def normalize_timestamps(df):
     df['timestamp'] = df['timestamp'] - df['timestamp'][0]
@@ -56,6 +57,11 @@ def calculate_work_reduction(server, client, period='60s'):
     work_reduction = gets_at_server.merge(gets_from_client, how='outer')
     return work_reduction
 
+def calculate_goodness(binned_traffic_reduction, binned_work_reduction, binned_client):
+    alpha = np.log(2)
+    beta = np.log(2)
+    gamma = 2
+    return np.exp(alpha * (binned_traffic_reduction['hit'] - 1.0)) * np.exp(-beta * binned_work_reduction['fraction']) * (1.0 - np.power(binned_client['errors'], 1.0/gamma))
 
 def main(experiment, bins):
     client = normalize_timestamps(pd.read_csv(experiment + '/client.log'))
@@ -84,7 +90,11 @@ def main(experiment, bins):
     binned_request_rate = resample_sum(request_rate)
     binned_request_rate['rate'] = binned_request_rate['gets_from_client'] / 60.0
 
-    fix, ax1 = plt.subplots()
+    binned_goodness = calculate_goodness(binned_traffic_reduction, binned_work_reduction, binned_client)
+
+    # Actual plotting
+    fig, ax1 = plt.subplots()
+    fig.suptitle(experiment)
 
     binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL (s)', ax=ax1)
     binned_true_ttl['actual_ttl'].plot(kind='bar', color='gray', label='Mean actual TTL (s)', ax=ax1)
@@ -96,6 +106,7 @@ def main(experiment, bins):
     binned_traffic_reduction['hit'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
     binned_client['errors'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
     binned_work_reduction['fraction'].plot(kind='bar', color='yellow', label='Mean work fraction', ax=ax2)
+    binned_goodness.plot(kind='bar', color='pink', label='Mean goodness', ax=ax2)
 
     ax2.legend(loc='upper right')
 
