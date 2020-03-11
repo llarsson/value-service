@@ -100,6 +100,8 @@ def binned_stats(experiment, period=60):
     result['mean_work_fraction'] = binned_work_reduction['fraction']
     result['mean_error_fraction'] = binned_client['errors']
 
+    result['epoch_timestamp'] = result.index.astype('int64')
+
     return result
 
 def plot(experiment, results):
