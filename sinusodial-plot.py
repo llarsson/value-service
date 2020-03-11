@@ -61,9 +61,9 @@ def calculate_goodness(binned_traffic_reduction, binned_work_reduction, binned_c
     alpha = np.log(2)
     beta = np.log(2)
     gamma = 2
-    return np.exp(alpha * (binned_traffic_reduction['hit'] - 1.0)) * np.exp(-beta * binned_work_reduction['fraction']) * (1.0 - np.power(binned_client['errors'], 1.0/gamma))
+    return pd.DataFrame(data=np.exp(alpha * (binned_traffic_reduction['hit'] - 1.0)) * np.exp(-beta * binned_work_reduction['fraction']) * (1.0 - np.power(binned_client['errors'], 1.0/gamma)), columns=['mean_goodness'])
 
-def main(experiment, bins):
+def binned_stats(experiment, period=60):
     client = normalize_timestamps(pd.read_csv(experiment + '/client.log'))
     caching = normalize_timestamps(pd.read_csv(experiment + '/caching.csv'))
     estimator = normalize_timestamps(pd.read_csv(experiment + '/estimator.csv'))
@@ -80,38 +80,56 @@ def main(experiment, bins):
     binned_true_ttl = resample(true_ttl)
 
     work_reduction = calculate_work_reduction(server, client)
-    binned_work_reduction = resample_sum(work_reduction)
+    binned_work_reduction = resample_sum(work_reduction, period='{}s'.format(period))
     binned_work_reduction['fraction'] = binned_work_reduction['gets_at_server'] / binned_work_reduction['gets_from_client']
 
-    binned_client = resample(client)
-    binned_estimator = resample(estimator)
-    binned_traffic_reduction = resample(traffic_reduction)
+    binned_client = resample(client, period='{}s'.format(period))
+    binned_estimator = resample(estimator, period='{}s'.format(period))
+    binned_traffic_reduction = resample(traffic_reduction, period='{}s'.format(period))
 
-    binned_request_rate = resample_sum(request_rate)
-    binned_request_rate['rate'] = binned_request_rate['gets_from_client'] / 60.0
+    binned_request_rate = resample_sum(request_rate, period='{}s'.format(period))
+    binned_request_rate['rate'] = binned_request_rate['gets_from_client'] / float(period)
 
     binned_goodness = calculate_goodness(binned_traffic_reduction, binned_work_reduction, binned_client)
 
+    result = binned_goodness.copy(deep=True)
+    result['mean_estimated_ttl'] = binned_estimator['estimate']
+    result['mean_true_ttl'] = binned_true_ttl['actual_ttl']
+    result['mean_request_rate'] = binned_request_rate['rate']
+    result['mean_traffic_reduction'] = binned_traffic_reduction['hit']
+    result['mean_work_fraction'] = binned_work_reduction['fraction']
+    result['mean_error_fraction'] = binned_client['errors']
+
+    return result
+
+def plot(experiment, results):
     # Actual plotting
     fig, ax1 = plt.subplots()
     fig.suptitle(experiment)
 
-    binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL (s)', ax=ax1)
-    binned_true_ttl['actual_ttl'].plot(kind='bar', color='gray', label='Mean actual TTL (s)', ax=ax1)
-    binned_request_rate['rate'].plot(kind='bar', color='black', label='Mean request rate (req/s)', ax=ax1)
+    results['mean_estimated_ttl'].plot(kind='bar', color='green', label='Mean estimated TTL (s)', ax=ax1)
+    results['mean_true_ttl'].plot(kind='bar', color='gray', label='Mean actual TTL (s)', ax=ax1)
+    results['mean_request_rate'].plot(kind='bar', color='black', label='Mean request rate (req/s)', ax=ax1)
     ax1.legend(loc='upper left')
 
     ax2 = ax1.twinx()
 
-    binned_traffic_reduction['hit'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
-    binned_client['errors'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
-    binned_work_reduction['fraction'].plot(kind='bar', color='yellow', label='Mean work fraction', ax=ax2)
-    binned_goodness.plot(kind='bar', color='pink', label='Mean goodness', ax=ax2)
+    results['mean_traffic_reduction'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
+    results['mean_error_fraction'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
+    results['mean_work_fraction'].plot(kind='bar', color='yellow', label='Mean work fraction', ax=ax2)
+    results['mean_goodness'].plot(kind='bar', color='pink', label='Mean goodness', ax=ax2)
 
     ax2.legend(loc='upper right')
 
     plt.show()
 
 if __name__=='__main__':
-    main(sys.argv[1], 30)
-    sys.exit(0)
+    experiment = sys.argv[1]
+    results = binned_stats(experiment, 60)
+
+    if len(results) == 31:
+        results.drop(results.tail(1).index, inplace=True)
+
+    plot(experiment, results)
+    results.to_csv('{}/results.csv'.format(experiment))
+
