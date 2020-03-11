@@ -22,12 +22,23 @@ def calculate_errors(client):
     client['difference'] = client['correct'] - client['actual']
     client['errors'] = client['difference'].clip(0,1)
 
+def calculate_request_rate(client):
+    return client.assign(gets_from_client=lambda x: 1)
+
 def calculate_true_ttl(server):
     # query for when we have done a 'set' and do something with timestamp difference and clip?
 
     # column with nanoseconds since previous 'set'?
 
-    pass
+    # give me all 'set'
+    # pandas 'diff' on timestamp column gives how long a value was valid
+    sets_at_server = server.query('operation == "set"')
+    sets_at_server = sets_at_server.drop(columns=['operation', 'value']).rename(columns={'timestamp': 'actual_ttl'})
+
+    print(server)
+    print(sets_at_server)
+
+    return server.merge(sets_at_server, left_index=True)
 
 def calculate_traffic_reduction(caching):
     gets = caching.query('method == "/ValueService/GetValue()"')
@@ -55,7 +66,12 @@ def main(experiment, bins):
     calculate_errors(client)
     calculate_true_ttl(server)
 
+    request_rate = calculate_request_rate(client)
+
     traffic_reduction = calculate_traffic_reduction(caching)
+
+    true_ttl = calculate_true_ttl(server)
+    print(true_ttl)
 
     work_reduction = calculate_work_reduction(server, client)
     binned_work_reduction = resample_sum(work_reduction)
@@ -65,9 +81,13 @@ def main(experiment, bins):
     binned_estimator = resample(estimator)
     binned_traffic_reduction = resample(traffic_reduction)
 
+    binned_request_rate = resample_sum(request_rate)
+    binned_request_rate['rate'] = binned_request_rate['gets_from_client'] / 60.0
+
     fix, ax1 = plt.subplots()
 
     binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL', ax=ax1)
+    binned_request_rate['rate'].plot(kind='bar', color='black', label='Mean request rate (req/s)', ax=ax1)
     ax1.legend(loc='upper left')
 
     ax2 = ax1.twinx()
