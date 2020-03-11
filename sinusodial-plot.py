@@ -22,6 +22,12 @@ def calculate_true_ttl(server):
 
     # column with nanoseconds since previous 'set'?
 
+    pass
+
+def calculate_traffic_reduction(caching):
+    gets = caching.query('method == "/ValueService/GetValue()"')
+    return gets.assign(hit=lambda x: caching['source'] == 'cache')
+
 def main(experiment, bins):
     client = normalize_timestamps(pd.read_csv(experiment + '/client.log'))
     caching = normalize_timestamps(pd.read_csv(experiment + '/caching.csv'))
@@ -31,12 +37,26 @@ def main(experiment, bins):
     calculate_errors(client)
     calculate_true_ttl(server)
 
+    traffic_reduction = calculate_traffic_reduction(caching)
+
+    print(traffic_reduction)
+
     binned_client = resample(client)
     binned_estimator = resample(estimator)
-    binned_client['errors'].plot(kind='bar', color='red', label='Mean error fraction')
-    binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL')
+    binned_traffic_reduction = resample(traffic_reduction)
 
-    plt.legend()
+    fix, ax1 = plt.subplots()
+
+    binned_estimator['estimate'].plot(kind='bar', color='green', label='Mean estimated TTL', ax=ax1)
+    ax1.legend(loc='upper left')
+
+    ax2 = ax1.twinx()
+
+    binned_traffic_reduction['hit'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
+    binned_client['errors'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
+
+    ax2.legend(loc='upper right')
+
     plt.show()
 
 if __name__=='__main__':
