@@ -26,6 +26,10 @@ def calculate_errors(client):
 def calculate_request_rate(client):
     return client.assign(gets_from_client=lambda x: 1)
 
+def calculate_update_rate(server):
+    sets_at_server = server.query('operation == "set"')
+    return sets_at_server.assign(update=lambda x: 1)
+
 def calculate_true_ttl(server):
     # query for when we have done a 'set' and do something with timestamp difference and clip?
 
@@ -73,6 +77,7 @@ def binned_stats(experiment, period=60):
     calculate_true_ttl(server)
 
     request_rate = calculate_request_rate(client)
+    update_rate = calculate_update_rate(server)
 
     traffic_reduction = calculate_traffic_reduction(caching)
 
@@ -90,12 +95,16 @@ def binned_stats(experiment, period=60):
     binned_request_rate = resample_sum(request_rate, period='{}s'.format(period))
     binned_request_rate['rate'] = binned_request_rate['gets_from_client'] / float(period)
 
+    binned_update_rate = resample_sum(update_rate, period='{}s'.format(period))
+    binned_update_rate['rate'] = binned_update_rate['update'] / float(period)
+
     binned_goodness = calculate_goodness(binned_traffic_reduction, binned_work_reduction, binned_client)
 
     result = binned_goodness.copy(deep=True)
     result['mean_estimated_ttl'] = binned_estimator['estimate']
     result['mean_true_ttl'] = binned_true_ttl['actual_ttl']
     result['mean_request_rate'] = binned_request_rate['rate']
+    result['mean_update_rate'] = binned_update_rate['rate']
     result['mean_traffic_reduction'] = binned_traffic_reduction['hit']
     result['mean_work_fraction'] = binned_work_reduction['fraction']
     result['mean_error_fraction'] = binned_client['errors']
@@ -109,18 +118,17 @@ def plot(experiment, results):
     fig, ax1 = plt.subplots()
     fig.suptitle(experiment)
 
-    results['mean_estimated_ttl'].plot(kind='bar', color='green', label='Mean estimated TTL (s)', ax=ax1)
-    results['mean_true_ttl'].plot(kind='bar', color='gray', label='Mean actual TTL (s)', ax=ax1)
-    results['mean_request_rate'].plot(kind='bar', color='black', label='Mean request rate (req/s)', ax=ax1)
+    ax1.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
+    ax1.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)')
+    ax1.step('epoch_timestamp', 'mean_request_rate', data=results, label='Mean request rate (req/s)')
+    ax1.step('epoch_timestamp', 'mean_update_rate', data=results, label='Mean update rate (req/s)')
     ax1.legend(loc='upper left')
 
     ax2 = ax1.twinx()
-
-    results['mean_traffic_reduction'].plot(kind='bar', color='blue', label='Mean cache hit ratio', ax=ax2)
-    results['mean_error_fraction'].plot(kind='bar', color='red', label='Mean error fraction', ax=ax2)
-    results['mean_work_fraction'].plot(kind='bar', color='yellow', label='Mean work fraction', ax=ax2)
-    results['mean_goodness'].plot(kind='bar', color='pink', label='Mean goodness', ax=ax2)
-
+    ax2.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
+    ax2.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
+    ax2.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
+    ax2.step('epoch_timestamp', 'mean_goodness', data=results, label='Mean goodness')
     ax2.legend(loc='upper right')
 
     plt.show()
