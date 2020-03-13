@@ -109,27 +109,49 @@ def binned_stats(experiment, period=60):
     result['mean_work_fraction'] = binned_work_reduction['fraction']
     result['mean_error_fraction'] = binned_client['errors']
 
-    result['epoch_timestamp'] = result.index.astype('int64') / 1000000000
+    result['epoch_timestamp'] = result.index.astype('int64') 
+    result['epoch_timestamp'] = result['epoch_timestamp'] / 1000000000.0
+
+    print(result)
 
     return result
 
+def plot_rates(results, original_axis):
+    rate_ax = original_axis.twinx()
+    results.plot(x='epoch_timestamp', y='mean_request_rate', kind='bar', label='Mean query rate (req/s)', ax=rate_ax, color='#FFA50080')
+    results.plot(x='epoch_timestamp', y='mean_update_rate', kind='bar', label='Mean update rate (req/s)', ax=rate_ax, color='#6A5ACD80')
+    rate_ax.legend(loc='upper right')
+
 def plot(experiment, results):
     # Actual plotting
-    fig, ax1 = plt.subplots()
+    fig, axs = plt.subplots(5, 1, sharex=True)
     fig.suptitle(experiment)
 
-    ax1.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
-    ax1.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)')
-    ax1.step('epoch_timestamp', 'mean_request_rate', data=results, label='Mean request rate (req/s)')
-    ax1.step('epoch_timestamp', 'mean_update_rate', data=results, label='Mean update rate (req/s)')
-    ax1.legend(loc='upper left')
+    ttl_ax = axs[0]
+    ttl_ax.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
+    ttl_ax.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)')
+    ttl_ax.legend(loc='upper left')
+    plot_rates(results, ttl_ax)
 
-    ax2 = ax1.twinx()
-    ax2.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
-    ax2.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
-    ax2.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
-    ax2.step('epoch_timestamp', 'mean_goodness', data=results, label='Mean goodness')
-    ax2.legend(loc='upper right')
+    tr_ax = axs[1]
+    tr_ax.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
+    tr_ax.legend(loc='upper left')
+    plot_rates(results, tr_ax)
+
+    ef_ax = axs[2]
+    ef_ax.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
+    ef_ax.legend(loc='upper left')
+    plot_rates(results, ef_ax)
+
+    wf_ax = axs[3]
+    wf_ax.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
+    wf_ax.legend(loc='upper left')
+    plot_rates(results, wf_ax)
+
+    g_ax = axs[4]
+    g_ax.step('epoch_timestamp', 'mean_goodness', data=results, label='Mean goodness')
+    g_ax.legend(loc='upper left')
+    plot_rates(results, g_ax)
 
     plt.show()
 
