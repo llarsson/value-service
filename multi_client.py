@@ -30,7 +30,7 @@ def setter(addr, end_time, correct, delay_function):
     delays = 0
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
-        while time.time() < end_time:
+        while now() < end_time:
             req_start = now()
             service.SetValue(value_pb2.Value(value=correct.value))
             req_end = now()
@@ -53,7 +53,7 @@ def getter(addr, end_time, correct, delay_function):
     logging.info("timestamp,response_time,correct,actual")
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
-        while time.time() < end_time:
+        while now() < end_time:
             try: 
                 work_start = now()
                 # fetch current correct value before making actual request,
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     correct = Value('I', 1)
 
     addr = os.getenv("VALUE_SERVICE_ADDR", "localhost:1100")
-    end_time = time.time() + float(os.getenv("DURATION", 300))
+    end_time = now() + float(os.getenv("DURATION", 300))
 
     get_mode = os.getenv("GETTER_MODE", "poisson")
     set_mode = os.getenv("SETTER_MODE", "poisson")
