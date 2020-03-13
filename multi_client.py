@@ -15,6 +15,15 @@ import os
 
 from multiprocessing import Process, Value
 
+time_zero = time.time()
+time_zero_ns = time.time_ns()
+
+def now():
+    return time.time() - time_zero
+
+def now_ns():
+    return time.time_ns() - time_zero_ns
+
 def setter(addr, end_time, correct, delay_function):
     random.seed(int(os.getenv("SEED", 42)))
     delay_sum = 0
@@ -22,9 +31,9 @@ def setter(addr, end_time, correct, delay_function):
     with grpc.insecure_channel(addr) as channel:
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
-            req_start = time.time()
+            req_start = now()
             service.SetValue(value_pb2.Value(value=correct.value))
-            req_end = time.time()
+            req_end = now()
             delay = delay_function(req_end) - (req_start - req_end)
             time.sleep(delay)
             correct.value += 1
@@ -46,19 +55,19 @@ def getter(addr, end_time, correct, delay_function):
         service = value_pb2_grpc.ValueServiceStub(channel)
         while time.time() < end_time:
             try: 
-                work_start = time.time()
+                work_start = now()
                 # fetch current correct value before making actual request,
                 # since this could take a while due to thread safety and whatnot
                 current_correct = correct.value
 
-                req_start_ns = time.time_ns()
+                req_start_ns = now_ns()
                 actual = service.GetValue(value_pb2.Empty()).value
-                req_end_ns = time.time_ns()
+                req_end_ns = now_ns()
                 logging.info("%d,%d,%d,%d", req_start_ns, (req_end_ns - req_start_ns), current_correct, actual)
 
                 delays += 1
                 # delay must be proportional to the time it took to make request
-                work_end = time.time()
+                work_end = now()
                 delay = delay_function(work_end) - (work_start - work_end)
                 delay_sum += delay
                 time.sleep(delay)
