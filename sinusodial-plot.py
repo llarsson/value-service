@@ -110,17 +110,15 @@ def binned_stats(experiment, period=60):
     result['mean_error_fraction'] = binned_client['errors']
 
     result['epoch_timestamp'] = result.index.astype('int64') 
-    result['epoch_timestamp'] = result['epoch_timestamp'] / 1000000000.0
-
-    print(result)
+    result['epoch_timestamp'] = result['epoch_timestamp'] / 1000000000
 
     return result
 
 def plot_rates(results, original_axis):
     rate_ax = original_axis.twinx()
-    results.plot(x='epoch_timestamp', y='mean_request_rate', kind='bar', label='Mean query rate (req/s)', ax=rate_ax, color='#FFA50080')
-    results.plot(x='epoch_timestamp', y='mean_update_rate', kind='bar', label='Mean update rate (req/s)', ax=rate_ax, color='#6A5ACD80')
-    rate_ax.legend(loc='upper right')
+    rate_ax.plot('epoch_timestamp', 'mean_request_rate', '.-', data=results, label='Mean query rate (req/s)', color='#FFA50080')
+    rate_ax.plot('epoch_timestamp', 'mean_update_rate', '.-', data=results, label='Mean update rate (req/s)', color='#6A5ACD80')
+    rate_ax.legend(loc='center right')
 
 def plot(experiment, results):
     # Actual plotting
@@ -134,22 +132,26 @@ def plot(experiment, results):
     plot_rates(results, ttl_ax)
 
     tr_ax = axs[1]
+    #tr_ax.set_ylim(0.0, 1.0)
     tr_ax.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
     tr_ax.legend(loc='upper left')
     plot_rates(results, tr_ax)
 
     ef_ax = axs[2]
+    #ef_ax.set_ylim(0.0, 1.0)
     ef_ax.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
     ef_ax.legend(loc='upper left')
     plot_rates(results, ef_ax)
 
     wf_ax = axs[3]
+    #wf_ax.set_ylim(0.0, 1.5)
     wf_ax.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
     wf_ax.legend(loc='upper left')
     plot_rates(results, wf_ax)
 
     g_ax = axs[4]
     g_ax.step('epoch_timestamp', 'mean_goodness', data=results, label='Mean goodness')
+    #g_ax.set_ylim(0.0, 1.0)
     g_ax.legend(loc='upper left')
     plot_rates(results, g_ax)
 
