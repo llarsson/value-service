@@ -2,8 +2,9 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import sys
 import numpy as np
+import os
+import sys
 
 def normalize_timestamps(df):
     df['timestamp'] = df['timestamp'] - df['timestamp'][0]
@@ -126,7 +127,6 @@ def plot_rates(results, original_axis, plot_queries=True, plot_updates=True):
         rate_ax.legend(loc='center right')
 
 def plot(experiment, results):
-    print(results)
     # Actual plotting
     fig, axs = plt.subplots(5, 1, sharex=True)
     fig.suptitle(experiment)
@@ -173,6 +173,7 @@ if __name__=='__main__':
         results.to_csv('{}/results.csv'.format(experiment))
         sources.append(results)
 
-    averages = pd.concat(sources)
-    averages = averages.groupby(averages.index).mean()
-    plot(', '.join(sys.argv[1:]), averages)
+    if os.getenv('NO_PLOT', 'false') != 'true':
+        averages = pd.concat(sources)
+        averages = averages.groupby(averages.index).mean()
+        plot(', '.join(sys.argv[1:]), averages)
