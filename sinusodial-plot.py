@@ -112,6 +112,8 @@ def binned_stats(experiment, period=60):
     result['epoch_timestamp'] = result.index.astype('int64') 
     result['epoch_timestamp'] = result['epoch_timestamp'] / 1000000000
 
+    result['cache_benefit'] = result['mean_request_rate'] / result['mean_update_rate']
+
     return result
 
 def plot_rates(results, original_axis, plot_queries=True, plot_updates=True):
@@ -124,6 +126,7 @@ def plot_rates(results, original_axis, plot_queries=True, plot_updates=True):
         rate_ax.legend(loc='center right')
 
 def plot(experiment, results):
+    print(results)
     # Actual plotting
     fig, axs = plt.subplots(5, 1, sharex=True)
     fig.suptitle(experiment)
@@ -161,12 +164,15 @@ def plot(experiment, results):
     plt.show()
 
 if __name__=='__main__':
-    experiment = sys.argv[1]
-    results = binned_stats(experiment, 60)
+    sources = []
 
-    if len(results) == 31:
-        results.drop(results.tail(1).index, inplace=True)
+    for experiment in sys.argv[1:]:
+        results = binned_stats(experiment, 60)
+        if len(results) == 31:
+            results.drop(results.tail(1).index, inplace=True)
+        results.to_csv('{}/results.csv'.format(experiment))
+        sources.append(results)
 
-    plot(experiment, results)
-    results.to_csv('{}/results.csv'.format(experiment))
-
+    averages = pd.concat(sources)
+    averages = averages.groupby(averages.index).mean()
+    plot(', '.join(sys.argv[1:]), averages)
