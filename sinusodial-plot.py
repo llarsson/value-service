@@ -114,11 +114,14 @@ def binned_stats(experiment, period=60):
 
     return result
 
-def plot_rates(results, original_axis):
+def plot_rates(results, original_axis, plot_queries=True, plot_updates=True):
     rate_ax = original_axis.twinx()
-    rate_ax.plot('epoch_timestamp', 'mean_request_rate', '.-', data=results, label='Mean query rate (req/s)', color='#FFA50080')
-    rate_ax.plot('epoch_timestamp', 'mean_update_rate', '.-', data=results, label='Mean update rate (req/s)', color='#6A5ACD80')
-    rate_ax.legend(loc='center right')
+    if plot_queries:
+        rate_ax.plot('epoch_timestamp', 'mean_request_rate', '.-', data=results, label='Mean query rate (req/s)', color='#FFA50080')
+    if plot_updates:
+        rate_ax.plot('epoch_timestamp', 'mean_update_rate', '.-', data=results, label='Mean update rate (req/s)', color='#6A5ACD80')
+    if plot_updates or plot_updates:
+        rate_ax.legend(loc='center right')
 
 def plot(experiment, results):
     # Actual plotting
@@ -129,7 +132,7 @@ def plot(experiment, results):
     ttl_ax.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
     ttl_ax.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)')
     ttl_ax.legend(loc='upper left')
-    plot_rates(results, ttl_ax)
+    plot_rates(results, ttl_ax, plot_queries=False)
 
     tr_ax = axs[1]
     #tr_ax.set_ylim(0.0, 1.0)
