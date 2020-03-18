@@ -30,12 +30,9 @@ def radar_chart(df, indices, title=''):
     plt.tick_params(axis='x', pad=20)
     
     # Draw ylabels
-    ax.set_rmax(1.2)
-    ax.set_ylim(1.2)
-    ax.set_rlabel_position(-60)
-    ax.set_rticks([0.0, 0.25, 0.5, 1.0], ['', '0.25', '0.50', '1.00'])
-    #plt.yticks([n / 10 for n in range(1, 12, 3)], color="grey", size=7)
-    #plt.ylim(0,1.2)
+    ax.set_rlim(0.0, 1.1)
+    ax.set_rlabel_position(-60) # diagonally downward
+    ax.set_rticks([0.0, 0.25, 0.5, 1.0], minor=['', '0.25', '0.50', '1.00'])
     # }}}
 
     for element in [df.loc[index] for index in indices]:
