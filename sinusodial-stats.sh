@@ -10,6 +10,10 @@ for proxy_max_age in static-0 static-1 static-10 static-30 dynamic-adaptive-0.1 
 		for repetition in $(seq 3); do
 		 	experiments+="${experiments_directory}/${proxy_max_age}-maxage-${setter_phase}-setter_phase-${repetition}-repetition "
 		done
-		./binned_stats.py ${experiments} > ${experiments_directory}/${proxy_max_age}-${setter_phase}_binned_stats.csv
+		experiment="${proxy_max_age}-${setter_phase}"
+		./binned_stats.py ${experiments} > ${experiments_directory}/${experiment}_binned_stats.csv
+		./averages.py ${proxy_max_age} ${setter_phase} ${experiments} > ${experiments_directory}/${experiment}_averages.csv
 	done
 done
+
+./collect_averages.py ${experiments_directory} > ${experiments_directory}/summary.csv
