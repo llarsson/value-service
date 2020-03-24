@@ -59,8 +59,9 @@ def select_best(phase, key, ascending=True):
 if __name__=='__main__':
     summary = pd.read_csv(sys.argv[1])
     summary.set_index(['name', 'parameter', 'phase'], inplace=True)
-    summary.drop('algorithm', axis=1, inplace=True)
-    summary.drop('goodness', axis=1, inplace=True)
+    summary.drop([col for col in summary.keys() if not col in category_labels], axis=1, inplace=True)
+    #summary.drop('algorithm', axis=1, inplace=True)
+    #summary.drop('goodness', axis=1, inplace=True)
 
     #selection = select_best(1800, 'error_fraction')
     selection = summary.query('phase == 1800').query('name == "dynamic-adaptive"').sort_values('parameter')
