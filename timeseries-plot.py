@@ -25,6 +25,7 @@ def plot(experiment, results):
     rate_ax = axs[0]
     rate_ax.plot('epoch_timestamp', 'mean_request_rate', '.-', data=results, label='Mean query rate (req/s)', color='#FFA50080')
     rate_ax.plot('epoch_timestamp', 'mean_update_rate', '.-', data=results, label='Mean update rate (req/s)', color='#6A5ACD80')
+    rate_ax.legend(loc='upper left')
 
     ttl_ax = axs[1]
     ttl_ax.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
