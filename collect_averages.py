@@ -10,7 +10,12 @@ def collect_averages(directory):
         sources.append(pd.read_csv(csv_file))
 
     result = pd.concat(sources)
-    result.set_index(['algorithm', 'phase'], inplace=True)
+
+    # FIXME obviously this is quite brittle if ever the format changes...
+    result['name'] = result['algorithm'].apply(lambda x: '-'.join(x.split('-')[:-1]))
+    result['parameter'] = result['algorithm'].apply(lambda x: float(''.join(x.split('-')[-1])))
+
+    result.set_index(['name', 'parameter', 'phase'], inplace=True)
     return result
 
 if __name__=='__main__':

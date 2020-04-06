@@ -32,16 +32,27 @@ def calculate_goodness(error_fraction, traffic_reduction, server_work_fraction):
     return np.exp(alpha * (traffic_reduction - 1.0)) * np.exp(-beta * server_work_fraction) * (1.0 - np.power(error_fraction, 1.0/gamma))
 
 
-def averages(algorithm, phase, client, caching, estimator, server):
+def averages(experiment_count, algorithm, phase, client, caching, estimator, server):
     error_fraction = calculate_error_fraction(client)
     traffic_reduction = calculate_traffic_reduction(caching)
     server_work_fraction = calculate_server_work_fraction(client, server)
     goodness = calculate_goodness(error_fraction, traffic_reduction, server_work_fraction)
+    (client_gets, caching_gets, estimator_incoming_gets, estimator_verification_gets, server_gets) = parse_gets(experiment_count, client, caching, estimator, server)
 
-    results = pd.DataFrame([[algorithm, phase, error_fraction, traffic_reduction, server_work_fraction, goodness]], 
-            columns=['algorithm', 'phase', 'error_fraction', 'traffic_reduction', 'server_work_fraction', 'goodness'])
-    results.set_index('algorithm', inplace=True)
+    results = pd.DataFrame([[algorithm, phase, client_gets, caching_gets, estimator_incoming_gets, estimator_verification_gets, server_gets, error_fraction, traffic_reduction, server_work_fraction, goodness]], 
+            columns=['algorithm', 'phase', 'client_gets', 'caching_gets', 'estimator_incoming_gets', 'estimator_verification_gets', 'server_gets', 'error_fraction', 'traffic_reduction', 'server_work_fraction', 'goodness'])
+    results.set_index(['algorithm', 'phase'], inplace=True)
     return results
+
+
+def parse_gets(experiment_count, client, caching, estimator, server):
+    client_gets = client.shape[0] / experiment_count
+    caching_gets = caching.query('method == "/ValueService/GetValue()"').shape[0] / experiment_count
+    estimator_incoming_gets = estimator.query('source == "/ValueService/GetValue()"').query('method == "client"').shape[0] / experiment_count
+    estimator_verification_gets = estimator.query('source == "/ValueService/GetValue()"').query('method == "verifier"').shape[0] / experiment_count
+    server_gets = server.query('operation == "get"').shape[0] / experiment_count
+
+    return (client_gets, caching_gets, estimator_incoming_gets, estimator_verification_gets, server_gets)
 
 
 if __name__=="__main__":
@@ -72,6 +83,6 @@ if __name__=="__main__":
     server = pd.concat(server_sources)
     server.set_index('timestamp')
 
-    results = averages(algorithm, phase, client, caching, estimator, server)
+    results = averages(len(experiments), algorithm, phase, client, caching, estimator, server)
 
     print(results.to_csv(None))

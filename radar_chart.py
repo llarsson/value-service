@@ -48,10 +48,23 @@ def radar_chart(df, indices, title=''):
     plt.suptitle(title)
     plt.show()
 
+def select_best(phase, key, ascending=True):
+    nontrivial = summary.query('phase == "{}"'.format(phase)).drop(('static', 0.0, 1800.0))
+    selection = (nontrivial.assign(rn=nontrivial.sort_values(key, ascending=ascending)
+        .groupby('name').cumcount() + 1)
+        .query('rn < 2'))
+    selection.drop(['rn'], axis=1, inplace=True)
+    return selection
+
 if __name__=='__main__':
     summary = pd.read_csv(sys.argv[1])
-    summary.set_index(['algorithm', 'phase'], inplace=True)
-    summary.drop('goodness', axis=1, inplace=True)
-    print(summary.index)
-    radar_chart(summary, [('dynamic-updaterisk-0.50', -5454.5), ('dynamic-updaterisk-0.50', 900.0), ('dynamic-adaptive-0.5', 900)], title='foo title')
+    summary.set_index(['name', 'parameter', 'phase'], inplace=True)
+    summary.drop([col for col in summary.keys() if not col in category_labels], axis=1, inplace=True)
+    #summary.drop('algorithm', axis=1, inplace=True)
+    #summary.drop('goodness', axis=1, inplace=True)
+
+    #selection = select_best(1800, 'error_fraction')
+    selection = summary.query('phase == 1800').query('name == "dynamic-adaptive"').sort_values('parameter')
+    #selection = select_best(1800, ['server_work_fraction'], ascending=False)
+    radar_chart(summary, selection.index, title='Behavior profile of Adaptive TTL (phase=1800)')
 
