@@ -14,10 +14,10 @@ def calculate_error_fraction(client):
 
 
 def calculate_traffic_reduction(caching):
-    gets = caching.query('method == "/ValueService/GetValue()"')
-    cached = gets.query('source == "cache"').shape[0]
-    total = gets.shape[0]
-    return cached / total
+    upstream_gets = caching.query('source == "upstream"').query('method == "/ValueService/GetValue(0)"')
+    cache_gets = caching.query('source == "cache"').query('method == "/ValueService/GetValue"')
+    total_count = upstream_gets.shape[0] + cache_gets.shape[0]
+    return cache_gets.shape[0] / total_count
 
 
 def calculate_server_work_fraction(client, server):
@@ -47,9 +47,9 @@ def averages(experiment_count, algorithm, phase, client, caching, estimator, ser
 
 def parse_gets(experiment_count, client, caching, estimator, server):
     client_gets = client.shape[0] / experiment_count
-    caching_gets = caching.query('method == "/ValueService/GetValue()"').shape[0] / experiment_count
-    estimator_incoming_gets = estimator.query('source == "/ValueService/GetValue()"').query('method == "client"').shape[0] / experiment_count
-    estimator_verification_gets = estimator.query('source == "/ValueService/GetValue()"').query('method == "verifier"').shape[0] / experiment_count
+    caching_gets = caching.query('method == "/ValueService/GetValue(0)"').shape[0] / experiment_count
+    estimator_incoming_gets = estimator.query('method == "/ValueService/GetValue(0)"').query('source == "client"').shape[0] / experiment_count
+    estimator_verification_gets = estimator.query('method == "/ValueService/GetValue(0)"').query('source == "verifier"').shape[0] / experiment_count
     server_gets = server.query('operation == "get"').shape[0] / experiment_count
 
     return (client_gets, caching_gets, estimator_incoming_gets, estimator_verification_gets, server_gets)
