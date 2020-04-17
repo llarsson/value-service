@@ -38,8 +38,8 @@ def calculate_true_ttl(server):
     return server.merge(sets_at_server, how='outer', right_index=True, left_index=True)
 
 def calculate_traffic_reduction(caching):
-    gets = caching.query('method == "/ValueService/GetValue(0)"')
-    return gets.assign(hit=lambda x: caching['source'] == 'cache')
+    gets = caching.query('method == "/ValueService/GetValue" or method == "/ValueService/GetValue(0)"')
+    return gets.assign(hit=lambda x: 1 * (caching['source'] == 'cache'))
 
 def calculate_work_reduction(server, client, period='60s'):
     gets_at_server = server.query('operation == "get"').assign(gets_at_server=lambda x: 1)
