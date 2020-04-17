@@ -19,7 +19,7 @@ def plot_rates(results, original_axis, plot_queries=True, plot_updates=True):
 
 def plot(experiment, results):
     # Actual plotting
-    fig, axs = plt.subplots(5, 1, sharex=True)
+    fig, axs = plt.subplots(4, 1, sharex=True)
     fig.suptitle(experiment)
 
     rate_ax = axs[0]
@@ -36,14 +36,15 @@ def plot(experiment, results):
     tr_ax = axs[2]
     tr_ax.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
     tr_ax.legend(loc='upper left')
+    tr_ax.set_ylim(0, 1)
     #plot_rates(results, tr_ax)
 
-    wf_ax = axs[3]
-    wf_ax.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
-    wf_ax.legend(loc='upper left')
-    #plot_rates(results, wf_ax)
+#    wf_ax = axs[3]
+#    wf_ax.step('epoch_timestamp', 'mean_work_fraction', data=results, label='Mean work fraction')
+#    wf_ax.legend(loc='upper left')
+#    #plot_rates(results, wf_ax)
 
-    ef_ax = axs[4]
+    ef_ax = axs[3]
     ef_ax.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
     ef_ax.legend(loc='upper left')
     #plot_rates(results, ef_ax)
@@ -56,22 +57,18 @@ def plot(experiment, results):
     plt.show()
 
 if __name__=='__main__':
-    experiments = sys.argv[1:]
+    title = sys.argv[1]
+    experiments = sys.argv[2:]
 
-    if len(experiments) == 1 and '.csv' in experiments[0]:
-        experiment = experiments[0]
-        data = pd.read_csv(experiment)
-        plot(experiment, data)
-    else:
-        sources = []
+    sources = []
 
-        for experiment in experiments:
-            results = binned_stats(experiment, 60)
-            if len(results) == 31:
-                results.drop(results.tail(1).index, inplace=True)
-            sources.append(results)
+    for experiment in experiments:
+        results = binned_stats(experiment, 60)
+        if len(results) == 31:
+            results.drop(results.tail(1).index, inplace=True)
+        sources.append(results)
 
-        averages = pd.concat(sources)
-        averages = averages.groupby(averages.index).mean()
+    averages = pd.concat(sources)
+    averages = averages.groupby(averages.index).mean()
 
-        plot(', '.join(experiments), averages)
+    plot(title, averages)
