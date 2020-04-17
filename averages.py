@@ -47,7 +47,7 @@ def averages(experiment_count, algorithm, phase, client, caching, estimator, ser
 
 def parse_gets(experiment_count, client, caching, estimator, server):
     client_gets = client.shape[0] / experiment_count
-    caching_gets = caching.query('method == "/ValueService/GetValue(0)"').shape[0] / experiment_count
+    caching_gets = caching.query('method == "/ValueService/GetValue(0)" or method == "/ValueService/GetValue"').shape[0] / experiment_count
     estimator_incoming_gets = estimator.query('method == "/ValueService/GetValue(0)"').query('source == "client"').shape[0] / experiment_count
     estimator_verification_gets = estimator.query('method == "/ValueService/GetValue(0)"').query('source == "verifier"').shape[0] / experiment_count
     server_gets = server.query('operation == "get"').shape[0] / experiment_count
