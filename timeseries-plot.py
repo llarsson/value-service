@@ -23,18 +23,18 @@ def plot(experiment, results):
     fig.suptitle(experiment)
 
     rate_ax = axs[0]
-    rate_ax.plot('epoch_timestamp', 'mean_request_rate', '.-', data=results, label='Mean query rate (req/s)', color='#FFA50080')
-    rate_ax.plot('epoch_timestamp', 'mean_update_rate', '.-', data=results, label='Mean update rate (req/s)', color='#6A5ACD80')
+    rate_ax.plot('epoch_timestamp', 'mean_request_rate', linestyle='solid', data=results, label='Mean query rate (req/s)', color='black')
+    rate_ax.plot('epoch_timestamp', 'mean_update_rate', linestyle='dashed', data=results, label='Mean update rate (req/s)', color='black')
     rate_ax.legend()
 
     ttl_ax = axs[1]
-    ttl_ax.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)')
-    ttl_ax.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)')
+    ttl_ax.step('epoch_timestamp', 'mean_true_ttl', data=results, label='Mean true TTL (s)', linestyle='dashed', color='black')
+    ttl_ax.step('epoch_timestamp', 'mean_estimated_ttl', data=results, label='Mean estimated TTL (s)', linestyle='solid', color='black')
     ttl_ax.legend()
     #plot_rates(results, ttl_ax, plot_queries=False)
 
     tr_ax = axs[2]
-    tr_ax.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction')
+    tr_ax.step('epoch_timestamp', 'mean_traffic_reduction', data=results, label='Mean traffic reduction', color='black')
     tr_ax.legend()
     tr_ax.set_ylim(0, 1)
     #plot_rates(results, tr_ax)
@@ -45,7 +45,7 @@ def plot(experiment, results):
 #    #plot_rates(results, wf_ax)
 
     ef_ax = axs[3]
-    ef_ax.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction')
+    ef_ax.step('epoch_timestamp', 'mean_error_fraction', data=results, label='Mean error fraction', color='black')
     ef_ax.legend()
     ef_ax.set_ylim(0, 0.5)
     #plot_rates(results, ef_ax)
