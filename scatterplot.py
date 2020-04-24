@@ -17,7 +17,9 @@ def scatterplot(summary):
 
     plt.xlabel('Error fraction')
     plt.ylabel('Traffic reduction')
-    plt.legend()
+    plt.legend(loc='lower right')
+
+    plt.tight_layout()
 
     plt.show()
 
