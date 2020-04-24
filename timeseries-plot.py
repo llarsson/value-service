@@ -55,6 +55,8 @@ def plot(experiment, results):
     # g_ax.legend(loc='upper left')
     # plot_rates(results, g_ax)
 
+    plt.tight_layout()
+
     plt.show()
 
 if __name__=='__main__':
