@@ -19,10 +19,12 @@ def scatterplot(summary):
     plt.ylabel('Traffic reduction')
     plt.legend(loc='lower right')
 
+    plt.grid(True)
     plt.tight_layout()
 
     plt.show()
 
 if __name__=='__main__':
     summary = sys.argv[1]
+    plt.rc('font', size=14)
     scatterplot(pd.read_csv(summary))
