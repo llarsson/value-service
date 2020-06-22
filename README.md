@@ -2,6 +2,8 @@
 
 Simple gRPC service that exposes a single settable value. Used in "Towards soft circuit breaking in service meshes via caching using dynamically estimated TTLs".
 
+The data set from the experiments from the paper are [in a different repository](https://github.com/llarsson/value-service-experiments).
+
 ## Running experiments
 
 This repo has the code for the multi-threaded Server and multi-threaded Client. You will also need the [Cache](https://github.com/llarsson/value-service-caching) and [Estimator](https://github.com/llarsson/value-service-estimator). Get those, and make the Docker images for each component. They should have the following names:
