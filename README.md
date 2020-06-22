@@ -7,7 +7,7 @@ Simple gRPC service that exposes a single settable value. Used in "Towards soft 
 This repo has the code for the multi-threaded Server and multi-threaded Client. You will also need the [Cache](https://github.com/llarsson/value-service-caching) and [Estimator](https://github.com/llarsson/value-service-estimator). Get those, and make the Docker images for each component. They should have the following names:
 
  * `value-service-estimator`
- * `value-service-cache`
+ * `value-service-caching`
  * `value-service-multiserver` (`docker build -t value-service-multiserver -f Dockerfile.multi_server .` in this repo)
  * `value-service-multiclient` (`docker build -t value-service-multiclient -f Dockerfile.multi_client .` in this repo)
 
