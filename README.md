@@ -1,6 +1,6 @@
 # value-service
 
-Simple gRPC service that exposes a single settable value. Used in "Towards soft circuit breaking in service meshes via caching using dynamically estimated TTLs".
+Simple gRPC service that exposes a single settable value. Used in "Towards soft circuit breaking in service meshes via application-agnostic caching".
 
 The data set from the experiments from the paper are [in a different repository](https://github.com/llarsson/value-service-experiments).
 
